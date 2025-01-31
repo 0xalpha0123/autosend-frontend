@@ -51,11 +51,11 @@ import { LoadingButton } from "./ui/loading-button";
 import { base, sepolia } from "viem/chains";
 
 // Simulate a database read for tasks.
-function getTasks() {
-  const tasks = data;
+// function getTasks() {
+//   const tasks = data;
 
-  return z.array(taskSchema).parse(tasks);
-}
+//   return z.array(taskSchema).parse(tasks);
+// }
 
 const initScheduleValue = {
   description: "",

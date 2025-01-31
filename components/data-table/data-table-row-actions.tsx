@@ -13,14 +13,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { taskSchema } from "../../data/schema";
+// import { taskSchema } from "../../data/schema";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
 }
 
 export function DataTableRowActions<TData>({
-  row,
+  // row,
 }: DataTableRowActionsProps<TData>) {
 
   return (
