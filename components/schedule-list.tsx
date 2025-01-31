@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { z } from "zod";
-import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
+// import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { useChainId, useReadContract, useSwitchChain } from "wagmi";
 import { format } from "date-fns";
 import { CalendarIcon, PlusCircle } from "lucide-react";
@@ -45,7 +45,7 @@ import autoSendABI from "@/lib/abis/autoSendABI.json";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { formatData } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { ColumnDef } from "@tanstack/react-table";
+// import { ColumnDef } from "@tanstack/react-table";
 import { createPublicClient, encodeFunctionData, http, parseUnits } from "viem";
 import { LoadingButton } from "./ui/loading-button";
 import { base, sepolia } from "viem/chains";
@@ -72,7 +72,7 @@ const client = createPublicClient({
 });
 
 export function ScheduleList() {
-  const tasks = getTasks();
+  // const tasks = getTasks();
 
   const chainId = useChainId();
   const { user } = usePrivy();
@@ -82,7 +82,7 @@ export function ScheduleList() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  // const [errorMessage, setErrorMessage] = useState("");
   const [newSchedule, setNewSchedule] = useState(initScheduleValue);
 
   useEffect(() => {
@@ -90,7 +90,7 @@ export function ScheduleList() {
       switchChain({ chainId: ADDRESSES[MODE].chainID });
   }, [chainId]);
 
-  let scheduleList = useReadContract({
+  const scheduleList = useReadContract({
     abi: autoSendABI.abi,
     address: ADDRESSES[MODE].AUTOSEND,
     functionName: "getSchedules",
@@ -113,7 +113,7 @@ export function ScheduleList() {
     );
     const provider = await nonEmbeddedWallets[0].getEthereumProvider();
 
-    setErrorMessage("");
+    // setErrorMessage("");
 
     // Convert USDC amount to smallest unit (6 decimal places)
     const amount = parseUnits(
@@ -159,12 +159,12 @@ export function ScheduleList() {
         toast("Transaction confirmed!");
       } else {
         console.log("❌ Transaction failed:", receipt);
-        setErrorMessage("Transaction failed.");
+        // setErrorMessage("Transaction failed.");
         toast("Transaction failed.");
       }
     } catch (error) {
       console.error("Transaction failed:", error);
-      setErrorMessage("Transaction failed. Please try again.");
+      // setErrorMessage("Transaction failed. Please try again.");
       toast("Transaction failed. Please try again.");
     }
     setIsLoading(false);

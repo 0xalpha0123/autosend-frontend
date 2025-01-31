@@ -10,7 +10,7 @@ export const shortenAddress = (address: string) => {
   return address.slice(0, 15) + "..." + address.slice(-10);
 };
 
-export const formatData = (data: any) => {
+export const formatData = (data: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   if (data === undefined || data === null || data.length === 0) return [];
   for (let i = 0; i < data.length; i++) {
     if (data[i].processed) continue;

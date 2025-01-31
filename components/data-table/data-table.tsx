@@ -33,7 +33,6 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -41,7 +40,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -114,7 +112,7 @@ export function DataTable<TData extends Schedule, TValue>({
   const { wallets } = useWallets();
 
   const [isLoading, setIsLoading] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState("");
+  // const [errorMessage, setErrorMessage] = React.useState("");
   const [rowSelection, setRowSelection] = React.useState({});
   const [openDialog, setOpenDialog] = React.useState(false);
   const [schedule, setSchedule] = React.useState<Schedule>(initScheduleValue);
@@ -171,7 +169,7 @@ export function DataTable<TData extends Schedule, TValue>({
     );
     const provider = await nonEmbeddedWallets[0].getEthereumProvider();
 
-    setErrorMessage("");
+    // setErrorMessage("");
 
     // Convert USDC amount to smallest unit (6 decimal places)
     const amount = parseUnits(
@@ -218,12 +216,12 @@ export function DataTable<TData extends Schedule, TValue>({
         toast("Transaction confirmed!");
       } else {
         console.log("❌ Transaction failed:", receipt);
-        setErrorMessage("Transaction failed.");
+        // setErrorMessage("Transaction failed.");
         toast("Transaction failed.");
       }
     } catch (error) {
       console.error("Transaction failed:", error);
-      setErrorMessage("Transaction failed. Please try again.");
+      // setErrorMessage("Transaction failed. Please try again.");
       toast("Transaction failed. Please try again.");
     }
     setIsLoading(false);
@@ -238,7 +236,7 @@ export function DataTable<TData extends Schedule, TValue>({
     );
     const provider = await nonEmbeddedWallets[0].getEthereumProvider();
 
-    setErrorMessage("");
+    // setErrorMessage("");
 
     try {
       const data = encodeFunctionData({
@@ -271,12 +269,12 @@ export function DataTable<TData extends Schedule, TValue>({
         toast("Transaction confirmed!");
       } else {
         console.log("❌ Transaction failed:", receipt);
-        setErrorMessage("Transaction failed.");
+        // setErrorMessage("Transaction failed.");
         toast("Transaction failed.");
       }
     } catch (error) {
       console.error("Transaction failed:", error);
-      setErrorMessage("Transaction failed. Please try again.");
+      // setErrorMessage("Transaction failed. Please try again.");
       toast("Transaction failed. Please try again.");
     }
     setIsLoading(false);
