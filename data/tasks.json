@@ -1,0 +1,109 @@
+[
+  {
+    "description": "TASK-8782 TASK-8782 TASK-8782 TASK-8782 TASK-8782",
+    "amount": "5000",
+    "status": "scheduled",
+    "label": "documentation",
+    "interval": "3 weeks"
+  },
+  {
+    "description": "TASK-7878 TASK-7878 TASK-7878 TASK-7878 TASK-7878 TASK-7878",
+    "amount": "2500",
+    "status": "updated",
+    "label": "documentation",
+    "interval": "1 day"
+  },
+  {
+    "description": "TASK-7839",
+    "amount": "450",
+    "status": "updated",
+    "label": "bug",
+    "interval": "5 days"
+  },
+  {
+    "description": "TASK-5562",
+    "amount": "500",
+    "status": "updated",
+    "interval": "2 months"
+  },
+  {
+    "description": "TASK-8686",
+    "amount": "25000",
+    "status": "canceled",
+    "interval": "5 days"
+  },
+  {
+    "description": "TASK-1280",
+    "amount": "1500",
+    "status": "updated",
+    "label": "bug",
+    "interval": "3 weeks"
+  },
+  {
+    "description": "TASK-7262",
+    "amount": "3500",
+    "status": "updated",
+    "interval": "1 week"
+  },
+  {
+    "description": "TASK-1138",
+    "amount": "450",
+    "status": "scheduled",
+    "interval": "3 weeks"
+  },
+  {
+    "description": "TASK-7184",
+    "amount": "30",
+    "status": "updated",
+    "interval": "1 week"
+  },
+  {
+    "description": "TASK-5160",
+    "amount": "4500",
+    "status": "scheduled",
+    "label": "documentation",
+    "interval": "1 week"
+  },
+  {
+    "description": "TASK-5618",
+    "amount": "5000",
+    "status": "updated",
+    "label": "documentation",
+    "interval": "1 week"
+  },
+  {
+    "description": "TASK-6699",
+    "amount": "750",
+    "status": "updated",
+    "label": "documentation",
+    "interval": "1 week"
+  },
+  {
+    "description": "TASK-2858",
+    "amount": "500",
+    "status": "updated",
+    "label": "bug",
+    "interval": "1 week"
+  },
+  {
+    "description": "TASK-9864",
+    "amount": "100",
+    "status": "updated",
+    "label": "bug",
+    "interval": "1 week"
+  },
+  {
+    "description": "TASK-8404",
+    "amount": "1500",
+    "status": "scheduled",
+    "label": "bug",
+    "interval": "1 week"
+  },
+  {
+    "description": "TASK-5365",
+    "amount": "500",
+    "status": "scheduled",
+    "label": "documentation",
+    "interval": "1 week"
+  }
+]
