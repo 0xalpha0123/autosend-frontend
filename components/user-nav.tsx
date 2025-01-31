@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { usePrivy } from "@privy-io/react-auth";
 import { toast } from "sonner";
 import { useChainId, useSwitchChain } from "wagmi";
 
@@ -21,7 +21,7 @@ import { shortenAddress } from "@/lib/utils";
 import { MODE, ADDRESSES } from "@/lib/constants";
 
 export function UserNav() {
-  const { wallets } = useWallets();
+  // const { wallets } = useWallets();
   const { authenticated, login, ready, logout, user } = usePrivy();
   const { switchChain } = useSwitchChain();
   const chainId = useChainId();
