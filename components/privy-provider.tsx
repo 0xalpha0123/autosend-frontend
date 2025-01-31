@@ -20,7 +20,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       config={{
         appearance: {
           theme: theme === "dark" ? "dark" : "light",
-          walletList: ["metamask", "rainbow", "wallet_connect"],
+          walletList: [
+            "detected_wallets",
+            "metamask",
+            "coinbase_wallet",
+            "rainbow",
+            "wallet_connect",
+          ],
         },
         defaultChain: sepolia,
         supportedChains: [base, sepolia],

@@ -46,7 +46,13 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { formatData } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
-import { createPublicClient, encodeFunctionData, http, parseUnits } from "viem";
+import {
+  createPublicClient,
+  encodeFunctionData,
+  erc20Abi,
+  http,
+  parseUnits,
+} from "viem";
 import { LoadingButton } from "./ui/loading-button";
 import { base, sepolia } from "viem/chains";
 
@@ -98,6 +104,14 @@ export function ScheduleList() {
     account: user?.wallet?.address as `0x${string}`,
   });
 
+  let approvedUSDC = useReadContract({
+    abi: erc20Abi,
+    address: ADDRESSES[MODE].USDC,
+    functionName: "allowance",
+    args: [user?.wallet?.address as `0x${string}`, ADDRESSES[MODE].AUTOSEND],
+    account: user?.wallet?.address as `0x${string}`,
+  });
+
   const handleModalChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -121,6 +135,49 @@ export function ScheduleList() {
       ADDRESSES[MODE].USDC_DECIMAL
     );
 
+    if (parseInt(approvedUSDC.data as unknown as string) === 0) {
+      try {
+        const maxUint256 = BigInt(2) ** BigInt(256) - BigInt(1); // Max uint256
+
+        const data = encodeFunctionData({
+          abi: erc20Abi,
+          functionName: "approve",
+          args: [ADDRESSES[MODE].AUTOSEND, maxUint256],
+        });
+        const transactionRequest = {
+          from: nonEmbeddedWallets[0].address,
+          to: ADDRESSES[MODE].USDC,
+          data: data,
+        };
+        const transactionHash = await provider.request({
+          method: "eth_sendTransaction",
+          params: [transactionRequest],
+        });
+
+        console.log(
+          "Transaction sent, waiting for confirmation...",
+          transactionHash
+        );
+
+        // Wait for transaction receipt using Viem
+        const receipt = await client.waitForTransactionReceipt({
+          hash: transactionHash,
+        });
+
+        if (receipt.status === "success") {
+          console.log("✅ Transaction confirmed:", receipt);
+          toast("Approved transaction confirmed!");
+        } else {
+          console.log("❌ Transaction failed:", receipt);
+          setErrorMessage("Transaction failed.");
+          toast("Approved transaction failed.");
+        }
+      } catch (error) {
+        console.error("Approved transaction failed:", error);
+        setErrorMessage("Approved transaction failed. Please try again.");
+        toast("Approved transaction failed. Please try again.");
+      }
+    }
     try {
       const data = encodeFunctionData({
         abi: autoSendABI.abi,
@@ -155,17 +212,17 @@ export function ScheduleList() {
       });
 
       if (receipt.status === "success") {
-        console.log("✅ Transaction confirmed:", receipt);
-        toast("Transaction confirmed!");
+        console.log("✅ CreateSchedule Transaction confirmed:", receipt);
+        toast("CreateSchedule Transaction confirmed!");
       } else {
-        console.log("❌ Transaction failed:", receipt);
-        setErrorMessage("Transaction failed.");
-        toast("Transaction failed.");
+        console.log("❌ CreateSchedule Transaction failed:", receipt);
+        setErrorMessage("CreateSchedule Transaction failed.");
+        toast("CreateSchedule Transaction failed.");
       }
     } catch (error) {
-      console.error("Transaction failed:", error);
-      setErrorMessage("Transaction failed. Please try again.");
-      toast("Transaction failed. Please try again.");
+      console.error("CreateSchedule Transaction failed:", error);
+      setErrorMessage("CreateSchedule Transaction failed. Please try again.");
+      toast("CreateSchedule Transaction failed. Please try again.");
     }
     setIsLoading(false);
     setNewSchedule(initScheduleValue);
@@ -299,7 +356,11 @@ export function ScheduleList() {
               </Popover>
               <DialogFooter>
                 <div className="grid w-full items-center gap-1.5">
-                  <Label>The first payment gets sent immediately</Label>
+                  <Label>
+                    The first payment gets sent immediately. Before making a
+                    transaction, you need to approve USDC for the smart
+                    contract.
+                  </Label>
                   <LoadingButton
                     className="w-full"
                     onClick={() => {
