@@ -213,16 +213,16 @@ export function DataTable<TData extends Schedule, TValue>({
 
       if (receipt.status === "success") {
         console.log("✅ Transaction confirmed:", receipt);
-        toast("Transaction confirmed!");
+        toast("Reoccurring payment successfully updated!");
       } else {
         console.log("❌ Transaction failed:", receipt);
         // setErrorMessage("Transaction failed.");
-        toast("Transaction failed.");
+        toast("Reoccurring payment update failed!");
       }
     } catch (error) {
       console.error("Transaction failed:", error);
       // setErrorMessage("Transaction failed. Please try again.");
-      toast("Transaction failed. Please try again.");
+      toast("Reoccurring payment update failed!");
     }
     setIsLoading(false);
     setSchedule(initScheduleValue);
@@ -266,16 +266,16 @@ export function DataTable<TData extends Schedule, TValue>({
 
       if (receipt.status === "success") {
         console.log("✅ Transaction confirmed:", receipt);
-        toast("Transaction confirmed!");
+        toast("Reoccurring payment successfully deleted!");
       } else {
         console.log("❌ Transaction failed:", receipt);
         // setErrorMessage("Transaction failed.");
-        toast("Transaction failed.");
+        toast("Reoccurring payment deleted failed!");
       }
     } catch (error) {
       console.error("Transaction failed:", error);
       // setErrorMessage("Transaction failed. Please try again.");
-      toast("Transaction failed. Please try again.");
+      toast("Reoccurring payment deleted failed!");
     }
     setIsLoading(false);
     setSchedule(initScheduleValue);
@@ -285,250 +285,469 @@ export function DataTable<TData extends Schedule, TValue>({
   return (
     <div className="space-y-4">
       <DataTableToolbar table={table} />
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} colSpan={header.colSpan}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <Dialog
-                  key={row.id}
-                  open={openDialog}
-                  onOpenChange={setOpenDialog}
-                >
-                  <DialogTrigger
-                    onClick={() => {
-                      setMode("detail");
-                      setSchedule(row.original);
-                      setOpenDialog(true);
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <>
+                    <DialogTrigger
+                      onClick={() => {
+                        setMode("detail");
+                        setSchedule(row.original);
+                        setOpenDialog(true);
 
-                      console.log(schedule);
-                    }}
-                    asChild
-                    className="w-full sm:w-auto"
-                  >
-                    <TableRow
-                      key={row.id}
-                      className="cursor-pointer"
-                      data-state={row.getIsSelected() && "selected"}
+                        console.log(schedule);
+                      }}
+                      asChild
+                      className="w-full sm:w-auto"
                     >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  </DialogTrigger>
-                  <DialogContent className="w-full sm:max-w-[425px] space-y-2">
-                    <DialogHeader className="space-y-1">
-                      <DialogTitle>Payment Details</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        name="description"
-                        placeholder="Name of the reoccurring payment"
-                        onChange={handleModalChange}
-                        value={schedule.description}
-                        disabled={mode === "detail"}
-                      />
-                    </div>
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label htmlFor="recipient">Recipient Address</Label>
-                      <Input
-                        name="recipient"
-                        placeholder="0x..."
-                        onChange={handleModalChange}
-                        value={schedule.recipient}
-                        disabled={mode === "detail"}
-                      />
-                    </div>
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label htmlFor="amount">Amount</Label>
-                      <Input
-                        name="amount"
-                        placeholder="0.00"
-                        onChange={handleModalChange}
-                        value={schedule.amount}
-                        disabled={mode === "detail"}
-                      />
-                    </div>
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label htmlFor="interval">Payment Schedule</Label>
-                      <Select
-                        name="interval"
-                        onValueChange={(value) =>
-                          setSchedule({
-                            ...schedule,
-                            interval: value,
-                          })
-                        }
-                        value={schedule.interval}
-                        disabled={mode === "detail"}
+                      <TableRow
+                        key={row.id}
+                        className="cursor-pointer"
+                        data-state={row.getIsSelected() && "selected"}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select payment cadence" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="86400">Every day</SelectItem>
-                          <SelectItem value="604800">Every week</SelectItem>
-                          <SelectItem value="1209600">Every 2 weeks</SelectItem>
-                          <SelectItem value="1814400">Every 3 weeks</SelectItem>
-                          <SelectItem value="2419200">Every 4 weeks</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Popover>
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    </DialogTrigger>
+                    <DialogContent className="w-full sm:max-w-[425px] space-y-2">
+                      <DialogHeader className="space-y-1">
+                        <DialogTitle>Payment Details</DialogTitle>
+                      </DialogHeader>
                       <div className="grid w-full max-w-sm items-center gap-1.5">
-                        <Label htmlFor="expiredTime">End date</Label>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !new Date(
-                                parseInt(schedule.expiredTime!) * 1000
-                              ) && "text-muted-foreground"
-                            )}
-                            disabled={mode === "detail"}
-                          >
-                            <CalendarIcon />
-                            {schedule.expiredTime ? (
-                              format(
-                                new Date(parseInt(schedule.expiredTime) * 1000),
-                                "PPP"
-                              )
-                            ) : (
-                              <span>When to stop payments</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            onSelect={(value: Date | undefined) => {
-                              if (!value) return;
-
-                              const timestamp = Math.floor(
-                                value.getTime() / 1000
-                              ).toString();
-                              setSchedule({
-                                ...schedule,
-                                expiredTime: timestamp,
-                              });
-                            }}
-                            initialFocus
-                          />
-                        </PopoverContent>
+                        <Label htmlFor="name">Name</Label>
+                        <Input
+                          name="description"
+                          placeholder="Name of the reoccurring payment"
+                          onChange={handleModalChange}
+                          value={schedule.description}
+                          disabled={mode === "detail"}
+                        />
                       </div>
-                    </Popover>
-                    <DialogFooter>
-                      <div className="w-full flex-col space-y-2">
+                      <div className="grid w-full max-w-sm items-center gap-1.5">
+                        <Label htmlFor="recipient">Recipient Address</Label>
+                        <Input
+                          name="recipient"
+                          placeholder="0x..."
+                          onChange={handleModalChange}
+                          value={schedule.recipient}
+                          disabled={mode === "detail"}
+                        />
+                      </div>
+                      <div className="grid w-full max-w-sm items-center gap-1.5">
+                        <Label htmlFor="amount">Amount</Label>
+                        <Input
+                          name="amount"
+                          placeholder="0.00"
+                          onChange={handleModalChange}
+                          value={schedule.amount}
+                          disabled={mode === "detail"}
+                        />
+                      </div>
+                      <div className="grid w-full max-w-sm items-center gap-1.5">
+                        <Label htmlFor="interval">Payment Schedule</Label>
+                        <Select
+                          name="interval"
+                          onValueChange={(value) =>
+                            setSchedule({
+                              ...schedule,
+                              interval: value,
+                            })
+                          }
+                          value={schedule.interval}
+                          disabled={mode === "detail"}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select payment cadence" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="86400">Every day</SelectItem>
+                            <SelectItem value="604800">Every week</SelectItem>
+                            <SelectItem value="1209600">
+                              Every 2 weeks
+                            </SelectItem>
+                            <SelectItem value="1814400">
+                              Every 3 weeks
+                            </SelectItem>
+                            <SelectItem value="2419200">
+                              Every 4 weeks
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Popover>
                         <div className="grid w-full max-w-sm items-center gap-1.5">
-                          {mode === "detail" && (
+                          <Label htmlFor="expiredTime">End date</Label>
+                          <PopoverTrigger asChild>
                             <Button
-                              type="submit"
-                              className="w-full"
-                              onClick={() => setMode("edit")}
+                              variant={"outline"}
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !new Date(
+                                  parseInt(schedule.expiredTime!) * 1000
+                                ) && "text-muted-foreground"
+                              )}
+                              disabled={mode === "detail"}
                             >
-                              Edit Payment
+                              <CalendarIcon />
+                              {schedule.expiredTime ? (
+                                format(
+                                  new Date(
+                                    parseInt(schedule.expiredTime) * 1000
+                                  ),
+                                  "PPP"
+                                )
+                              ) : (
+                                <span>When to stop payments</span>
+                              )}
                             </Button>
-                          )}
-                          {mode === "edit" && (
-                            <LoadingButton
-                              className="w-full"
-                              onClick={() => {
-                                updateSchedule();
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              onSelect={(value: Date | undefined) => {
+                                if (!value) return;
+
+                                const timestamp = Math.floor(
+                                  value.getTime() / 1000
+                                ).toString();
+                                setSchedule({
+                                  ...schedule,
+                                  expiredTime: timestamp,
+                                });
                               }}
-                              loading={isLoading}
-                            >
-                              Confirm Changes
-                            </LoadingButton>
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </div>
+                      </Popover>
+                      <DialogFooter>
+                        <div className="w-full flex-col space-y-2">
+                          <div className="grid w-full max-w-sm items-center gap-1.5">
+                            {mode === "detail" && (
+                              <Button
+                                type="submit"
+                                className="w-full"
+                                onClick={() => setMode("edit")}
+                              >
+                                Edit Payment
+                              </Button>
+                            )}
+                            {mode === "edit" && (
+                              <LoadingButton
+                                className="w-full"
+                                onClick={() => {
+                                  updateSchedule();
+                                }}
+                                loading={isLoading}
+                              >
+                                Confirm Changes
+                              </LoadingButton>
+                            )}
+                          </div>
+                          {mode === "detail" && (
+                            <div className="w-full flex max-w-sm items-center gap-1.5">
+                              <Button
+                                variant="outline"
+                                className="w-[50%]"
+                                onClick={handleOpenScan}
+                              >
+                                View Transactions
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    className="w-[50%] text-red-500"
+                                  >
+                                    Delete
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      Are you absolutely sure?
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This action cannot be undone. This will
+                                      permanently delete this reoccurring
+                                      payment.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <LoadingButton
+                                      className="text-red-500 h-9"
+                                      onClick={() => {
+                                        deleteSchedule();
+                                      }}
+                                      variant="outline"
+                                      loading={isLoading}
+                                    >
+                                      Yes, delete it
+                                    </LoadingButton>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           )}
                         </div>
-                        {mode === "detail" && (
-                          <div className="w-full flex max-w-sm items-center gap-1.5">
-                            <Button
-                              variant="outline"
-                              className="w-[50%]"
-                              onClick={handleOpenScan}
+                      </DialogFooter>
+                    </DialogContent>
+                  </>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    <div className="flex flex-col items-center">
+                      <>No reoccurring payments yet.</>
+                      <>
+                        <DialogTrigger
+                          onClick={() => {
+                            setOpenDialog(true);
+                          }}
+                          asChild
+                          className="w-full sm:w-auto"
+                        >
+                          <Button
+                            variant="link"
+                            className="sm:w-auto w-[200px]"
+                            onClick={() => setOpenDialog(true)}
+                          >
+                            Set up your first payment
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="w-full sm:max-w-[425px] space-y-2">
+                          <DialogHeader className="space-y-1">
+                            <DialogTitle>Payment Details</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid w-full max-w-sm items-center gap-1.5">
+                            <Label htmlFor="name">Name</Label>
+                            <Input
+                              name="description"
+                              placeholder="Name of the reoccurring payment"
+                              onChange={handleModalChange}
+                              value={schedule.description}
+                              disabled={mode === "detail"}
+                            />
+                          </div>
+                          <div className="grid w-full max-w-sm items-center gap-1.5">
+                            <Label htmlFor="recipient">Recipient Address</Label>
+                            <Input
+                              name="recipient"
+                              placeholder="0x..."
+                              onChange={handleModalChange}
+                              value={schedule.recipient}
+                              disabled={mode === "detail"}
+                            />
+                          </div>
+                          <div className="grid w-full max-w-sm items-center gap-1.5">
+                            <Label htmlFor="amount">Amount</Label>
+                            <Input
+                              name="amount"
+                              placeholder="0.00"
+                              onChange={handleModalChange}
+                              value={schedule.amount}
+                              disabled={mode === "detail"}
+                            />
+                          </div>
+                          <div className="grid w-full max-w-sm items-center gap-1.5">
+                            <Label htmlFor="interval">Payment Schedule</Label>
+                            <Select
+                              name="interval"
+                              onValueChange={(value) =>
+                                setSchedule({
+                                  ...schedule,
+                                  interval: value,
+                                })
+                              }
+                              value={schedule.interval}
+                              disabled={mode === "detail"}
                             >
-                              View Transactions
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select payment cadence" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="86400">Every day</SelectItem>
+                                <SelectItem value="604800">
+                                  Every week
+                                </SelectItem>
+                                <SelectItem value="1209600">
+                                  Every 2 weeks
+                                </SelectItem>
+                                <SelectItem value="1814400">
+                                  Every 3 weeks
+                                </SelectItem>
+                                <SelectItem value="2419200">
+                                  Every 4 weeks
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Popover>
+                            <div className="grid w-full max-w-sm items-center gap-1.5">
+                              <Label htmlFor="expiredTime">End date</Label>
+                              <PopoverTrigger asChild>
                                 <Button
-                                  variant="outline"
-                                  className="w-[50%] text-red-500"
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full justify-start text-left font-normal",
+                                    !new Date(
+                                      parseInt(schedule.expiredTime!) * 1000
+                                    ) && "text-muted-foreground"
+                                  )}
+                                  disabled={mode === "detail"}
                                 >
-                                  Delete
+                                  <CalendarIcon />
+                                  {schedule.expiredTime ? (
+                                    format(
+                                      new Date(
+                                        parseInt(schedule.expiredTime) * 1000
+                                      ),
+                                      "PPP"
+                                    )
+                                  ) : (
+                                    <span>When to stop payments</span>
+                                  )}
                                 </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Are you absolutely sure?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    This action cannot be undone. This will
-                                    permanently delete this reoccurring payment.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  onSelect={(value: Date | undefined) => {
+                                    if (!value) return;
+
+                                    const timestamp = Math.floor(
+                                      value.getTime() / 1000
+                                    ).toString();
+                                    setSchedule({
+                                      ...schedule,
+                                      expiredTime: timestamp,
+                                    });
+                                  }}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </div>
+                          </Popover>
+                          <DialogFooter>
+                            <div className="w-full flex-col space-y-2">
+                              <div className="grid w-full max-w-sm items-center gap-1.5">
+                                {mode === "detail" && (
+                                  <Button
+                                    type="submit"
+                                    className="w-full"
+                                    onClick={() => setMode("edit")}
+                                  >
+                                    Edit Payment
+                                  </Button>
+                                )}
+                                {mode === "edit" && (
                                   <LoadingButton
-                                    className="text-red-500 h-9"
+                                    className="w-full"
                                     onClick={() => {
-                                      deleteSchedule();
+                                      updateSchedule();
                                     }}
-                                    variant="outline"
                                     loading={isLoading}
                                   >
-                                    Yes, delete it
+                                    Confirm Changes
                                   </LoadingButton>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        )}
-                      </div>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                                )}
+                              </div>
+                              {mode === "detail" && (
+                                <div className="w-full flex max-w-sm items-center gap-1.5">
+                                  <Button
+                                    variant="outline"
+                                    className="w-[50%]"
+                                    onClick={handleOpenScan}
+                                  >
+                                    View Transactions
+                                  </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        variant="outline"
+                                        className="w-[50%] text-red-500"
+                                      >
+                                        Delete
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                          Are you absolutely sure?
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This action cannot be undone. This
+                                          will permanently delete this
+                                          reoccurring payment.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>
+                                          Cancel
+                                        </AlertDialogCancel>
+                                        <LoadingButton
+                                          className="text-red-500 h-9"
+                                          onClick={() => {
+                                            deleteSchedule();
+                                          }}
+                                          variant="outline"
+                                          loading={isLoading}
+                                        >
+                                          Yes, delete it
+                                        </LoadingButton>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              )}
+                            </div>
+                          </DialogFooter>
+                        </DialogContent>
+                      </>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </Dialog>
       <DataTablePagination table={table} />
     </div>
   );

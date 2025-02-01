@@ -102,7 +102,7 @@ export function ScheduleList() {
     account: user?.wallet?.address as `0x${string}`,
   });
 
-  let approvedUSDC = useReadContract({
+  const approvedUSDC = useReadContract({
     abi: erc20Abi,
     address: ADDRESSES[MODE].USDC,
     functionName: "allowance",
@@ -164,14 +164,14 @@ export function ScheduleList() {
 
         if (receipt.status === "success") {
           console.log("✅ Transaction confirmed:", receipt);
-          toast("Approved transaction confirmed!");
+          toast("USDC successfully approved!");
         } else {
           console.log("❌ Transaction failed:", receipt);
-          toast("Approved transaction failed.");
+          toast("USDC approve failed!");
         }
       } catch (error) {
         console.error("Approved transaction failed:", error);
-        toast("Approved transaction failed. Please try again.");
+        toast("USDC approve failed!");
       }
     }
     try {
@@ -208,15 +208,15 @@ export function ScheduleList() {
       });
 
       if (receipt.status === "success") {
-        console.log("✅ CreateSchedule Transaction confirmed:", receipt);
-        toast("CreateSchedule Transaction confirmed!");
+        //   console.log("✅ CreateSchedule Transaction confirmed:", receipt);
+        toast("Reoccurring payment successfully scheduled!");
       } else {
-        console.log("❌ CreateSchedule Transaction failed:", receipt);
-        toast("CreateSchedule Transaction failed.");
+        console.log("❌ CreateSchedule Transaction failed:");
+        toast("Reoccurring payment schedule failed!");
       }
     } catch (error) {
       console.error("CreateSchedule Transaction failed:", error);
-      toast("CreateSchedule Transaction failed. Please try again.");
+      toast("Reoccurring payment schedule failed!");
     }
     setIsLoading(false);
     setNewSchedule(initScheduleValue);
@@ -254,7 +254,7 @@ export function ScheduleList() {
                     All reoccurring payments are made in USDC.
                   </DialogDescription>
                   <DialogDescription>
-                    Autosend charges 0.5% per transaction.
+                    Autosend charges 0.25% per transaction.
                   </DialogDescription>
                 </div>
               </DialogHeader>
