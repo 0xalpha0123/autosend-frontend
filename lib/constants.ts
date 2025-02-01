@@ -27,9 +27,9 @@ export const ADDRESSES: Addresses = {
   },
   mainnet: {
     chainID: 8453,
-    AUTOSEND: "0x2Db90dc8E1eaf2EFE45963120A369004d870529E",
+    AUTOSEND: "0x2D2235E1cA8D5F7E8702893BC10f41f32C1B0bAa",
     USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-    USDC_DECIMAL: 18,
+    USDC_DECIMAL: 6,
     ETHSCAN_URL: "https://basescan.org/",
   },
 };
