@@ -108,7 +108,7 @@ export function DataTable<TData extends Schedule, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const { user } = usePrivy();
+  const { user, authenticated, login } = usePrivy();
   const { wallets } = useWallets();
 
   const [isLoading, setIsLoading] = React.useState(false);
@@ -315,8 +315,6 @@ export function DataTable<TData extends Schedule, TValue>({
                         setMode("detail");
                         setSchedule(row.original);
                         setOpenDialog(true);
-
-                        console.log(schedule);
                       }}
                       asChild
                       className="w-full sm:w-auto"
@@ -533,21 +531,31 @@ export function DataTable<TData extends Schedule, TValue>({
                     <div className="flex flex-col items-center">
                       <>No reoccurring payments yet.</>
                       <>
-                        <DialogTrigger
-                          onClick={() => {
-                            setOpenDialog(true);
-                          }}
-                          asChild
-                          className="w-full sm:w-auto"
-                        >
+                        {authenticated ? (
+                          <DialogTrigger
+                            onClick={() => {
+                              setOpenDialog(true);
+                            }}
+                            asChild
+                            className="w-full sm:w-auto"
+                          >
+                            <Button
+                              variant="link"
+                              className="sm:w-auto w-[200px] text-blue-500"
+                              onClick={() => setOpenDialog(true)}
+                            >
+                              Set up your first payment
+                            </Button>
+                          </DialogTrigger>
+                        ) : (
                           <Button
                             variant="link"
-                            className="sm:w-auto w-[200px]"
-                            onClick={() => setOpenDialog(true)}
+                            className="sm:w-auto w-[200px] text-blue-500"
+                            onClick={() => login()}
                           >
-                            Set up your first payment
+                            Connect your wallet
                           </Button>
-                        </DialogTrigger>
+                        )}
                         <DialogContent className="w-full sm:max-w-[425px] space-y-2">
                           <DialogHeader className="space-y-1">
                             <DialogTitle>Payment Details</DialogTitle>

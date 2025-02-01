@@ -49,7 +49,7 @@ function bigintToStringWithDecimal(bigIntValue: bigint, decimalPlaces = 6) {
 
   // If the value is smaller than the decimal places, prepend zeros
   if (bigIntStr.length <= decimalPlaces) {
-    return "0." + bigIntStr.padEnd(decimalPlaces, "0");
+    return parseFloat("0." + bigIntStr.padStart(decimalPlaces, "0")).toFixed(2);
   } else {
     // Split integer and decimal parts
     const integerPart = bigIntStr.slice(0, -decimalPlaces);
