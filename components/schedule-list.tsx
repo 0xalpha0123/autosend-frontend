@@ -254,7 +254,7 @@ export function ScheduleList() {
                     All reoccurring payments are made in USDC.
                   </DialogDescription>
                   <DialogDescription>
-                    Autosend charges 0.25% per transaction.
+                    Autosend charges 0.5% per transaction.
                   </DialogDescription>
                 </div>
               </DialogHeader>
