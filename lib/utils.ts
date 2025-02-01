@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { ADDRESSES, MODE, Status } from "./constants";
+import { ADDRESSES, MODE, STATUS } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -30,7 +30,7 @@ export const formatData = (data: any) => {
     data[i].interval = data[i].interval.toString();
     // "Every " + formatDuration(parseInt(data[i].interval.toString()));
     data[i].lastExecutedTime = data[i].lastExecutedTime.toString();
-    data[i].status = Status[data[i].state];
+    data[i].state = STATUS[data[i].state];
   }
   return data;
 };

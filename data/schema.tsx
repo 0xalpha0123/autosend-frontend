@@ -5,7 +5,7 @@ import { z } from "zod";
 export const taskSchema = z.object({
   description: z.string(),
   amount: z.string(),
-  status: z.string(),
+  state: z.string(),
   interval: z.string(),
 });
 

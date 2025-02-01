@@ -15,7 +15,7 @@ interface Addresses {
   };
 }
 
-export const Status = ["Scheduled", "Updated", "Canceled", "Funded", "Expired"];
+export const STATUS = ["Scheduled", "Updated", "Canceled", "Funded", "Expired"];
 
 export const ADDRESSES: Addresses = {
   testnet: {

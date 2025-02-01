@@ -79,7 +79,7 @@ export function ScheduleList() {
   // const tasks = getTasks();
 
   const chainId = useChainId();
-  const { user } = usePrivy();
+  const { user, authenticated } = usePrivy();
   const { wallets } = useWallets();
 
   const { switchChain } = useSwitchChain();
@@ -118,6 +118,56 @@ export function ScheduleList() {
     setNewSchedule({ ...newSchedule, [e.target.name]: e.target.value });
   };
 
+  const approveUSDC = async () => {
+    // if (parseInt(approvedUSDC.data as unknown as string) === 0) {
+    setIsLoading(true);
+    const nonEmbeddedWallets = wallets.filter(
+      (wallet) => wallet.connectorType !== "embedded"
+    );
+    const provider = await nonEmbeddedWallets[0].getEthereumProvider();
+
+    try {
+      const maxUint256 = BigInt(2) ** BigInt(256) - BigInt(1); // Max uint256
+
+      const data = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [ADDRESSES[MODE].AUTOSEND, maxUint256],
+      });
+      const transactionRequest = {
+        from: nonEmbeddedWallets[0].address,
+        to: ADDRESSES[MODE].USDC,
+        data: data,
+      };
+      const transactionHash = await provider.request({
+        method: "eth_sendTransaction",
+        params: [transactionRequest],
+      });
+
+      console.log(
+        "Transaction sent, waiting for confirmation...",
+        transactionHash
+      );
+
+      // Wait for transaction receipt using Viem
+      const receipt = await client.waitForTransactionReceipt({
+        hash: transactionHash,
+      });
+
+      if (receipt.status === "success") {
+        console.log("✅ Transaction confirmed:", receipt);
+        toast("USDC successfully approved!");
+      } else {
+        console.log("❌ Transaction failed:", receipt);
+        toast("USDC approve failed!");
+      }
+    } catch (error) {
+      console.error("Approved transaction failed:", error);
+      toast("USDC approve failed!");
+    }
+    setIsLoading(false);
+  };
+
   const createSchedule = async () => {
     setIsLoading(true);
     const nonEmbeddedWallets = wallets.filter(
@@ -132,48 +182,6 @@ export function ScheduleList() {
       newSchedule.amount.toString(),
       ADDRESSES[MODE].USDC_DECIMAL
     );
-
-    if (parseInt(approvedUSDC.data as unknown as string) === 0) {
-      try {
-        const maxUint256 = BigInt(2) ** BigInt(256) - BigInt(1); // Max uint256
-
-        const data = encodeFunctionData({
-          abi: erc20Abi,
-          functionName: "approve",
-          args: [ADDRESSES[MODE].AUTOSEND, maxUint256],
-        });
-        const transactionRequest = {
-          from: nonEmbeddedWallets[0].address,
-          to: ADDRESSES[MODE].USDC,
-          data: data,
-        };
-        const transactionHash = await provider.request({
-          method: "eth_sendTransaction",
-          params: [transactionRequest],
-        });
-
-        console.log(
-          "Transaction sent, waiting for confirmation...",
-          transactionHash
-        );
-
-        // Wait for transaction receipt using Viem
-        const receipt = await client.waitForTransactionReceipt({
-          hash: transactionHash,
-        });
-
-        if (receipt.status === "success") {
-          console.log("✅ Transaction confirmed:", receipt);
-          toast("USDC successfully approved!");
-        } else {
-          console.log("❌ Transaction failed:", receipt);
-          toast("USDC approve failed!");
-        }
-      } catch (error) {
-        console.error("Approved transaction failed:", error);
-        toast("USDC approve failed!");
-      }
-    }
     try {
       const data = encodeFunctionData({
         abi: autoSendABI.abi,
@@ -237,14 +245,17 @@ export function ScheduleList() {
         <div className="flex items-center space-x-2 w-full sm:w-auto">
           <Dialog open={openDialog} onOpenChange={setOpenDialog}>
             <DialogTrigger asChild className="w-full sm:w-auto">
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={isLoading}
-                className="p-4"
-              >
-                <PlusCircle />
-              </Button>
+              {authenticated && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={isLoading}
+                  className="p-4"
+                  onClick={() => setNewSchedule(initScheduleValue)}
+                >
+                  <PlusCircle />
+                </Button>
+              )}
             </DialogTrigger>
             <DialogContent className="w-full sm:max-w-[425px] space-y-2">
               <DialogHeader className="space-y-1">
@@ -351,18 +362,24 @@ export function ScheduleList() {
               <DialogFooter>
                 <div className="grid w-full items-center gap-1.5">
                   <Label>
-                    The first payment gets sent immediately. Before making a
-                    transaction, you need to approve USDC for the smart
-                    contract.
+                    {parseInt(approvedUSDC.data as unknown as string) === 0
+                      ? "The first payment gets sent immediately. Before making a transaction, you need to approve USDC for the smart contract."
+                      : "The first payment gets sent immediately."}
                   </Label>
                   <LoadingButton
                     className="w-full"
                     onClick={() => {
-                      createSchedule();
+                      if (
+                        parseInt(approvedUSDC.data as unknown as string) === 0
+                      )
+                        approveUSDC();
+                      else createSchedule();
                     }}
                     loading={isLoading}
                   >
-                    Start payment
+                    {parseInt(approvedUSDC.data as unknown as string) === 0
+                      ? "Approve USDC"
+                      : "Start payment"}
                   </LoadingButton>
                 </div>
               </DialogFooter>

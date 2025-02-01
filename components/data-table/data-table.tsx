@@ -17,7 +17,13 @@ import {
 } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import { createPublicClient, encodeFunctionData, http, parseUnits } from "viem";
+import {
+  createPublicClient,
+  encodeFunctionData,
+  erc20Abi,
+  http,
+  parseUnits,
+} from "viem";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { toast } from "sonner";
 
@@ -71,6 +77,8 @@ import { cn } from "@/lib/utils";
 import autoSendABI from "@/lib/abis/autoSendABI.json";
 import { LoadingButton } from "../ui/loading-button";
 import { base, sepolia } from "viem/chains";
+import { DialogDescription } from "@radix-ui/react-dialog";
+import { useReadContract } from "wagmi";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -85,7 +93,7 @@ interface Schedule {
   amount: string;
   interval: string;
   expiredTime?: string;
-  status: string;
+  state: string;
 }
 
 const initScheduleValue = {
@@ -96,7 +104,7 @@ const initScheduleValue = {
   amount: "0",
   interval: "86400",
   expiredTime: "",
-  status: "0",
+  state: "0",
 };
 
 const client = createPublicClient({
@@ -160,6 +168,127 @@ export function DataTable<TData extends Schedule, TValue>({
     >
   ) => {
     setSchedule({ ...schedule, [e.target.name]: e.target.value });
+  };
+
+  const approvedUSDC = useReadContract({
+    abi: erc20Abi,
+    address: ADDRESSES[MODE].USDC,
+    functionName: "allowance",
+    args: [user?.wallet?.address as `0x${string}`, ADDRESSES[MODE].AUTOSEND],
+    account: user?.wallet?.address as `0x${string}`,
+  });
+
+  const approveUSDC = async () => {
+    // if (parseInt(approvedUSDC.data as unknown as string) === 0) {
+    setIsLoading(true);
+    const nonEmbeddedWallets = wallets.filter(
+      (wallet) => wallet.connectorType !== "embedded"
+    );
+    const provider = await nonEmbeddedWallets[0].getEthereumProvider();
+
+    try {
+      const maxUint256 = BigInt(2) ** BigInt(256) - BigInt(1); // Max uint256
+
+      const data = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [ADDRESSES[MODE].AUTOSEND, maxUint256],
+      });
+      const transactionRequest = {
+        from: nonEmbeddedWallets[0].address,
+        to: ADDRESSES[MODE].USDC,
+        data: data,
+      };
+      const transactionHash = await provider.request({
+        method: "eth_sendTransaction",
+        params: [transactionRequest],
+      });
+
+      console.log(
+        "Transaction sent, waiting for confirmation...",
+        transactionHash
+      );
+
+      // Wait for transaction receipt using Viem
+      const receipt = await client.waitForTransactionReceipt({
+        hash: transactionHash,
+      });
+
+      if (receipt.status === "success") {
+        console.log("✅ Transaction confirmed:", receipt);
+        toast("USDC successfully approved!");
+      } else {
+        console.log("❌ Transaction failed:", receipt);
+        toast("USDC approve failed!");
+      }
+    } catch (error) {
+      console.error("Approved transaction failed:", error);
+      toast("USDC approve failed!");
+    }
+    setIsLoading(false);
+  };
+
+  const createSchedule = async () => {
+    setIsLoading(true);
+    const nonEmbeddedWallets = wallets.filter(
+      (wallet) => wallet.connectorType !== "embedded"
+    );
+    const provider = await nonEmbeddedWallets[0].getEthereumProvider();
+
+    // setErrorMessage("");
+
+    // Convert USDC amount to smallest unit (6 decimal places)
+    const amount = parseUnits(
+      schedule.amount.toString(),
+      ADDRESSES[MODE].USDC_DECIMAL
+    );
+    try {
+      const data = encodeFunctionData({
+        abi: autoSendABI.abi,
+        functionName: "createSchedule",
+        args: [
+          schedule.description,
+          schedule.asset,
+          schedule.recipient,
+          amount,
+          schedule.interval,
+          schedule.expiredTime,
+        ],
+      });
+      const transactionRequest = {
+        from: nonEmbeddedWallets[0].address,
+        to: ADDRESSES[MODE].AUTOSEND,
+        data: data,
+      };
+      const transactionHash = await provider.request({
+        method: "eth_sendTransaction",
+        params: [transactionRequest],
+      });
+
+      console.log(
+        "Transaction sent, waiting for confirmation...",
+        transactionHash
+      );
+
+      // Wait for transaction receipt using Viem
+      const receipt = await client.waitForTransactionReceipt({
+        hash: transactionHash,
+      });
+
+      if (receipt.status === "success") {
+        //   console.log("✅ CreateSchedule Transaction confirmed:", receipt);
+        toast("Reoccurring payment successfully scheduled!");
+      } else {
+        console.log("❌ CreateSchedule Transaction failed:");
+        toast("Reoccurring payment schedule failed!");
+      }
+    } catch (error) {
+      console.error("CreateSchedule Transaction failed:", error);
+      toast("Reoccurring payment schedule failed!");
+    }
+    setIsLoading(false);
+    setSchedule(initScheduleValue);
+    setOpenDialog(false);
   };
 
   const updateSchedule = async () => {
@@ -317,6 +446,7 @@ export function DataTable<TData extends Schedule, TValue>({
                         setOpenDialog(true);
                       }}
                       asChild
+                      key={row.id}
                       className="w-full sm:w-auto"
                     >
                       <TableRow
@@ -448,15 +578,18 @@ export function DataTable<TData extends Schedule, TValue>({
                       <DialogFooter>
                         <div className="w-full flex-col space-y-2">
                           <div className="grid w-full max-w-sm items-center gap-1.5">
-                            {mode === "detail" && (
-                              <Button
-                                type="submit"
-                                className="w-full"
-                                onClick={() => setMode("edit")}
-                              >
-                                Edit Payment
-                              </Button>
-                            )}
+                            {mode === "detail" &&
+                              schedule.state !== "Canceled" && (
+                                <Button
+                                  type="submit"
+                                  className="w-full"
+                                  onClick={() => {
+                                    setMode("edit");
+                                  }}
+                                >
+                                  Edit Payment
+                                </Button>
+                              )}
                             {mode === "edit" && (
                               <LoadingButton
                                 className="w-full"
@@ -473,7 +606,9 @@ export function DataTable<TData extends Schedule, TValue>({
                             <div className="w-full flex max-w-sm items-center gap-1.5">
                               <Button
                                 variant="outline"
-                                className="w-[50%]"
+                                className={`w-[50%] ${
+                                  schedule.state === "Canceled" && "w-full"
+                                }`}
                                 onClick={handleOpenScan}
                               >
                                 View Transactions
@@ -482,7 +617,9 @@ export function DataTable<TData extends Schedule, TValue>({
                                 <AlertDialogTrigger asChild>
                                   <Button
                                     variant="outline"
-                                    className="w-[50%] text-red-500"
+                                    className={`w-[50%] text-red-500 ${
+                                      schedule.state === "Canceled" && "hidden"
+                                    }`}
                                   >
                                     Delete
                                   </Button>
@@ -542,7 +679,10 @@ export function DataTable<TData extends Schedule, TValue>({
                             <Button
                               variant="link"
                               className="sm:w-auto w-[200px] text-blue-500"
-                              onClick={() => setOpenDialog(true)}
+                              onClick={() => {
+                                setOpenDialog(true);
+                                setSchedule(initScheduleValue);
+                              }}
                             >
                               Set up your first payment
                             </Button>
@@ -558,39 +698,44 @@ export function DataTable<TData extends Schedule, TValue>({
                         )}
                         <DialogContent className="w-full sm:max-w-[425px] space-y-2">
                           <DialogHeader className="space-y-1">
-                            <DialogTitle>Payment Details</DialogTitle>
+                            <DialogTitle>Start reoccurring payment</DialogTitle>
+                            <div className="space-y-0">
+                              <DialogDescription>
+                                All reoccurring payments are made in USDC.
+                              </DialogDescription>
+                              <DialogDescription>
+                                Autosend charges 0.5% per transaction.
+                              </DialogDescription>
+                            </div>
                           </DialogHeader>
-                          <div className="grid w-full max-w-sm items-center gap-1.5">
+                          <div className="grid w-full items-center gap-1.5">
                             <Label htmlFor="name">Name</Label>
                             <Input
                               name="description"
                               placeholder="Name of the reoccurring payment"
                               onChange={handleModalChange}
                               value={schedule.description}
-                              disabled={mode === "detail"}
                             />
                           </div>
-                          <div className="grid w-full max-w-sm items-center gap-1.5">
+                          <div className="grid w-full items-center gap-1.5">
                             <Label htmlFor="recipient">Recipient Address</Label>
                             <Input
                               name="recipient"
                               placeholder="0x..."
                               onChange={handleModalChange}
                               value={schedule.recipient}
-                              disabled={mode === "detail"}
                             />
                           </div>
-                          <div className="grid w-full max-w-sm items-center gap-1.5">
+                          <div className="grid w-full items-center gap-1.5">
                             <Label htmlFor="amount">Amount</Label>
                             <Input
                               name="amount"
                               placeholder="0.00"
                               onChange={handleModalChange}
                               value={schedule.amount}
-                              disabled={mode === "detail"}
                             />
                           </div>
-                          <div className="grid w-full max-w-sm items-center gap-1.5">
+                          <div className="grid w-full items-center gap-1.5">
                             <Label htmlFor="interval">Payment Schedule</Label>
                             <Select
                               name="interval"
@@ -601,7 +746,6 @@ export function DataTable<TData extends Schedule, TValue>({
                                 })
                               }
                               value={schedule.interval}
-                              disabled={mode === "detail"}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Select payment cadence" />
@@ -624,7 +768,7 @@ export function DataTable<TData extends Schedule, TValue>({
                             </Select>
                           </div>
                           <Popover>
-                            <div className="grid w-full max-w-sm items-center gap-1.5">
+                            <div className="grid w-full items-center gap-1.5">
                               <Label htmlFor="expiredTime">End date</Label>
                               <PopoverTrigger asChild>
                                 <Button
@@ -632,10 +776,10 @@ export function DataTable<TData extends Schedule, TValue>({
                                   className={cn(
                                     "w-full justify-start text-left font-normal",
                                     !new Date(
-                                      parseInt(schedule.expiredTime!) * 1000
+                                      parseInt(schedule.expiredTime ?? "0") *
+                                        1000
                                     ) && "text-muted-foreground"
                                   )}
-                                  disabled={mode === "detail"}
                                 >
                                   <CalendarIcon />
                                   {schedule.expiredTime ? (
@@ -673,77 +817,33 @@ export function DataTable<TData extends Schedule, TValue>({
                             </div>
                           </Popover>
                           <DialogFooter>
-                            <div className="w-full flex-col space-y-2">
-                              <div className="grid w-full max-w-sm items-center gap-1.5">
-                                {mode === "detail" && (
-                                  <Button
-                                    type="submit"
-                                    className="w-full"
-                                    onClick={() => setMode("edit")}
-                                  >
-                                    Edit Payment
-                                  </Button>
-                                )}
-                                {mode === "edit" && (
-                                  <LoadingButton
-                                    className="w-full"
-                                    onClick={() => {
-                                      updateSchedule();
-                                    }}
-                                    loading={isLoading}
-                                  >
-                                    Confirm Changes
-                                  </LoadingButton>
-                                )}
-                              </div>
-                              {mode === "detail" && (
-                                <div className="w-full flex max-w-sm items-center gap-1.5">
-                                  <Button
-                                    variant="outline"
-                                    className="w-[50%]"
-                                    onClick={handleOpenScan}
-                                  >
-                                    View Transactions
-                                  </Button>
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button
-                                        variant="outline"
-                                        className="w-[50%] text-red-500"
-                                      >
-                                        Delete
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>
-                                          Are you absolutely sure?
-                                        </AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          This action cannot be undone. This
-                                          will permanently delete this
-                                          reoccurring payment.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>
-                                          Cancel
-                                        </AlertDialogCancel>
-                                        <LoadingButton
-                                          className="text-red-500 h-9"
-                                          onClick={() => {
-                                            deleteSchedule();
-                                          }}
-                                          variant="outline"
-                                          loading={isLoading}
-                                        >
-                                          Yes, delete it
-                                        </LoadingButton>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                </div>
-                              )}
+                            <div className="grid w-full items-center gap-1.5">
+                              <Label>
+                                {parseInt(
+                                  approvedUSDC.data as unknown as string
+                                ) === 0
+                                  ? "The first payment gets sent immediately. Before making a transaction, you need to approve USDC for the smart contract."
+                                  : "The first payment gets sent immediately."}
+                              </Label>
+                              <LoadingButton
+                                className="w-full"
+                                onClick={() => {
+                                  if (
+                                    parseInt(
+                                      approvedUSDC.data as unknown as string
+                                    ) === 0
+                                  )
+                                    approveUSDC();
+                                  else createSchedule();
+                                }}
+                                loading={isLoading}
+                              >
+                                {parseInt(
+                                  approvedUSDC.data as unknown as string
+                                ) === 0
+                                  ? "Approve USDC"
+                                  : "Start payment"}
+                              </LoadingButton>
                             </div>
                           </DialogFooter>
                         </DialogContent>

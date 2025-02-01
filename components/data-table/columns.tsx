@@ -63,16 +63,16 @@ export const columns: ColumnDef<Task>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "status",
+    accessorKey: "state",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const status = statuses.find(
-        (status) => status.value === row.getValue("status")
+      const state = statuses.find(
+        (state) => state.value === row.getValue("state")
       );
 
-      if (!status) {
+      if (!state) {
         return null;
       }
 
@@ -80,17 +80,17 @@ export const columns: ColumnDef<Task>[] = [
         <div className="flex items-center">
           <Badge
             variant={
-              status.label === "Scheduled"
+              state.label === "Scheduled"
                 ? "default"
-                : status.label === "Canceled"
+                : state.label === "Canceled"
                 ? "destructive"
                 : "secondary"
             }
           >
-            {status.icon && (
-              <status.icon className="hidden sm:flex mr-2 h-4 w-4 text-muted-foreground" />
+            {state.icon && (
+              <state.icon className="hidden sm:flex mr-2 h-4 w-4 text-muted-foreground" />
             )}
-            <span>{status.label}</span>
+            <span>{state.label}</span>
           </Badge>
         </div>
       );
