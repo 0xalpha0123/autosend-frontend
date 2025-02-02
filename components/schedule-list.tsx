@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-// import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { useChainId, useReadContract, useSwitchChain } from "wagmi";
 import { format } from "date-fns";
 import { CalendarIcon, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
-import { ethers } from "ethers";
 
 import {
   Dialog,
@@ -37,9 +35,6 @@ import {
 import { columns } from "@/components/data-table/columns";
 import { DataTable } from "@/components/data-table/data-table";
 
-import { taskSchema } from "@/data/schema";
-
-import data from "@/data/tasks.json";
 import { ADDRESSES, MODE } from "@/lib/constants";
 import autoSendABI from "@/lib/abis/autoSendABI.json";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
@@ -54,13 +49,6 @@ import {
 } from "viem";
 import { LoadingButton } from "./ui/loading-button";
 import { base, sepolia } from "viem/chains";
-
-// Simulate a database read for tasks.
-// function getTasks() {
-//   const tasks = data;
-
-//   return z.array(taskSchema).parse(tasks);
-// }
 
 const initScheduleValue = {
   description: "",
@@ -77,8 +65,6 @@ const client = createPublicClient({
 });
 
 export function ScheduleList() {
-  // const tasks = getTasks();
-
   const chainId = useChainId();
   const { user, authenticated } = usePrivy();
   const { wallets } = useWallets();
@@ -87,7 +73,6 @@ export function ScheduleList() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-  // const [errorMessage, setErrorMessage] = useState("");
   const [newSchedule, setNewSchedule] = useState(initScheduleValue);
 
   const approvedUSDC = useReadContract({
@@ -126,7 +111,6 @@ export function ScheduleList() {
   };
 
   const approveUSDC = async () => {
-    // if (parseInt(approvedUSDC.data as unknown as string) === 0) {
     setIsLoading(true);
     const nonEmbeddedWallets = wallets.filter(
       (wallet) => wallet.connectorType !== "embedded"
@@ -182,8 +166,6 @@ export function ScheduleList() {
     );
     const provider = await nonEmbeddedWallets[0].getEthereumProvider();
 
-    // setErrorMessage("");
-
     // Convert USDC amount to smallest unit (6 decimal places)
     const amount = parseUnits(
       newSchedule.amount.toString(),
@@ -223,7 +205,7 @@ export function ScheduleList() {
       });
 
       if (receipt.status === "success") {
-        //   console.log("✅ CreateSchedule Transaction confirmed:", receipt);
+        console.log("✅ CreateSchedule Transaction confirmed:", receipt);
         toast("Reoccurring payment successfully scheduled!");
       } else {
         console.log("❌ CreateSchedule Transaction failed:");
