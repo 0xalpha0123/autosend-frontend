@@ -176,6 +176,9 @@ export function DataTable<TData extends Schedule, TValue>({
     functionName: "allowance",
     args: [user?.wallet?.address as `0x${string}`, ADDRESSES[MODE].AUTOSEND],
     account: user?.wallet?.address as `0x${string}`,
+    query: {
+      refetchInterval: 500, // Refetch every 5 seconds
+    },
   });
 
   const approveUSDC = async () => {

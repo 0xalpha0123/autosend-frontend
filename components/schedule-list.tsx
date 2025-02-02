@@ -6,6 +6,7 @@ import { useChainId, useReadContract, useSwitchChain } from "wagmi";
 import { format } from "date-fns";
 import { CalendarIcon, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
+import { ethers } from "ethers";
 
 import {
   Dialog,
@@ -89,6 +90,17 @@ export function ScheduleList() {
   // const [errorMessage, setErrorMessage] = useState("");
   const [newSchedule, setNewSchedule] = useState(initScheduleValue);
 
+  const approvedUSDC = useReadContract({
+    abi: erc20Abi,
+    address: ADDRESSES[MODE].USDC,
+    functionName: "allowance",
+    args: [user?.wallet?.address as `0x${string}`, ADDRESSES[MODE].AUTOSEND],
+    account: user?.wallet?.address as `0x${string}`,
+    query: {
+      refetchInterval: 500, // Refetch every 5 seconds
+    },
+  });
+
   useEffect(() => {
     if (chainId !== ADDRESSES[MODE].chainID)
       switchChain({ chainId: ADDRESSES[MODE].chainID });
@@ -100,14 +112,9 @@ export function ScheduleList() {
     functionName: "getSchedules",
     // args: [],
     account: user?.wallet?.address as `0x${string}`,
-  });
-
-  const approvedUSDC = useReadContract({
-    abi: erc20Abi,
-    address: ADDRESSES[MODE].USDC,
-    functionName: "allowance",
-    args: [user?.wallet?.address as `0x${string}`, ADDRESSES[MODE].AUTOSEND],
-    account: user?.wallet?.address as `0x${string}`,
+    query: {
+      refetchInterval: 500, // Refetch every 5 seconds
+    },
   });
 
   const handleModalChange = (
@@ -362,8 +369,9 @@ export function ScheduleList() {
               <DialogFooter>
                 <div className="grid w-full items-center gap-1.5">
                   <Label>
+                    {/* parseInt(approvedUSDC.data as unknown as string) === 0 */}
                     {parseInt(approvedUSDC.data as unknown as string) === 0
-                      ? "The first payment gets sent immediately. Before making a transaction, you need to approve USDC for the smart contract."
+                      ? "Before making a transaction, you need to approve USDC for the smart contract."
                       : "The first payment gets sent immediately."}
                   </Label>
                   <LoadingButton
