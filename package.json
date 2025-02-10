@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@privy-io/react-auth": "^2.1.0",
+    "@privy-io/react-auth": "^2.4.2",
     "@privy-io/server-auth": "^1.18.3",
     "@privy-io/wagmi": "^1.0.2",
     "@radix-ui/react-alert-dialog": "^1.1.5",
@@ -41,7 +41,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "viem": "^2.22.17",
-    "wagmi": "^2.14.9",
+    "wagmi": "^2.14.11",
     "zod": "^3.24.1"
   },
   "devDependencies": {
